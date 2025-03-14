@@ -19,7 +19,7 @@ This project implements a mobile document scanner using Python, OpenCV, and comp
 1.  **Clone the repository:**
 
     ```bash
-    git clone [https://github.com/your-username/doc-scanner.git](https://www.google.com/search?q=https://github.com/your-username/doc-scanner.git)
+    git clone https://github.com/Jack-0ut/doc-scanner.git
     cd doc-scanner
     ```
 
