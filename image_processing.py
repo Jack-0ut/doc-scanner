@@ -2,7 +2,6 @@ from transform import four_point_transform
 from skimage.filters import threshold_local
 import cv2
 import imutils
-import numpy as np
 
 def process_image(image):
     """Processes the input image for document scanning and returns the transformed images."""
@@ -54,4 +53,4 @@ def process_image(image):
     T = threshold_local(warped_gray, 11, offset=10, method="gaussian")
     warped_thresh = (warped_gray > T).astype("uint8") * 255
 
-    return image_resized, thresh, orig, warped_thresh
+    return image_resized, warped_thresh
