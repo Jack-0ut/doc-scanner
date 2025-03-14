@@ -15,15 +15,13 @@ st.write("Upload an image to scan the document.")
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    image = load_image(uploaded_file)  # Convert uploaded file to OpenCV format
+    image = load_image(uploaded_file)
     print(f"Image path: {uploaded_file.name}")
     try:
-        # Pass the image (not the path) to the process_image function
-        image_resized, edged, orig, warped = process_image(image)
+        warped = process_image(image)
 
         # Display images
-        st.image(image_resized, caption="Original (Resized)", use_container_width=True)
-        st.image(edged, caption="Edge Detection", use_container_width=True)
+        st.image(image, caption="Original (Resized)", use_container_width=True)
         st.image(warped, caption="Scanned Document", use_container_width=True)
 
     except Exception as e:

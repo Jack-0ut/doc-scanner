@@ -5,9 +5,12 @@ import imutils
 
 def process_image(image):
     """Processes the input image for document scanning and returns the transformed images."""
-    # Ensure the image is not None
-    if image is None:
-        raise ValueError("Error: Invalid image input.")
+    # Check if the input is a path (string) or already an image (array)
+    if isinstance(image, str):
+        # Load the image from the path
+        image = cv2.imread(image)
+        if image is None:
+            raise ValueError("Error: Invalid image input. Unable to load image from the provided path.")
 
     # Copy the original image to preserve it
     orig = image.copy()
@@ -51,6 +54,6 @@ def process_image(image):
     # Convert the warped image to grayscale and apply thresholding
     warped_gray = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
     T = threshold_local(warped_gray, 11, offset=10, method="gaussian")
-    warped_thresh = (warped_gray > T).astype("uint8") * 255
+    warped= (warped_gray > T).astype("uint8") * 255
 
-    return image_resized, warped_thresh
+    return warped
