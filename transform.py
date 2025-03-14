@@ -9,8 +9,6 @@ def order_points(pts):
     - Bottom-right
     - Bottom-left
 
-    This ensures a consistent ordering for perspective transformations.
-
     Parameters:
         pts (numpy.ndarray): Array of shape (4, 2) containing the four (x, y) coordinates.
 
@@ -69,5 +67,15 @@ def four_point_transform(image, pts):
     
     # Apply the transformation
     warped = cv2.warpPerspective(image, M, (maxWidth, maxHeight))
-    
+
+    # Handle padding if needed: Ensure the final warped image is fully within the bounds
+    warped_height, warped_width = warped.shape[:2]
+    original_height, original_width = image.shape[:2]
+
+    # If warped image dimensions are smaller than the original, add padding
+    if warped_width < original_width or warped_height < original_height:
+        padded_warped = np.zeros_like(image)
+        padded_warped[:warped_height, :warped_width] = warped
+        warped = padded_warped
+
     return warped
