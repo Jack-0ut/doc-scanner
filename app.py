@@ -1,28 +1,42 @@
 import streamlit as st
 import numpy as np
 import cv2
-from image_processing import process_image
+import tempfile
+from docscanner import DocScanner
 
-def load_image(uploaded_file):
-    """Reads an uploaded image file and converts it into a NumPy array."""
-    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-    return cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+def main():
+    st.title("Document Scanner")
 
-# Streamlit UI
-st.title("Document Scanner App 📝📸")
-st.write("Upload an image to scan the document.")
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png", "bmp", "tiff"])
+    #interactive_mode = st.checkbox("Manually adjust document corners")
 
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+    if uploaded_file is not None:
+        # Convert uploaded file to OpenCV format
+        file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+        image_cv = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
-if uploaded_file is not None:
-    image = load_image(uploaded_file)
-    print(f"Image path: {uploaded_file.name}")
-    try:
-        warped = process_image(image)
+        # Save as a temporary file for OpenCV processing
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
+            temp_path = temp_file.name
+            cv2.imwrite(temp_path, image_cv)  # Save the image for scanner
 
-        # Display images
-        st.image(image, caption="Original (Resized)", use_container_width=True)
-        st.image(warped, caption="Scanned Document", use_container_width=True)
+        scanner = DocScanner(interactive=False)
+        scanned_image = scanner.scan(temp_path)  # Process image
 
-    except Exception as e:
-        st.error(f"Error processing image: {str(e)}")
+        # Debugging: Print error if scan failed
+        if scanned_image is None:
+            st.error("⚠️ Document scanning failed. Please try another image.")
+            return
+
+        # Display the scanned image
+        st.image(scanned_image, caption="Scanned Document", use_container_width=True)
+
+        # Allow user to download the scanned image
+        _, buffer = cv2.imencode(".jpg", scanned_image)
+        st.download_button(label="Download Scanned Image",
+                           data=buffer.tobytes(),
+                           file_name="scanned_document.jpg",
+                           mime="image/jpeg")
+
+if __name__ == "__main__":
+    main()
