@@ -1,39 +1,36 @@
 import argparse
-import cv2
 import os
-from image_processing import process_image
+from docscanner import DocScanner  
 
-def save_output_image(warped, output_path):
-    """Saves the scanned document image to the specified path."""
-    cv2.imwrite(output_path, warped)
-    print(f"Scanned document saved to {output_path}")
+def main():
+    ap = argparse.ArgumentParser()
+    group = ap.add_mutually_exclusive_group(required=True)
+    group.add_argument("--images", help="Directory of images to be scanned")
+    group.add_argument("--image", help="Path to single image to be scanned")
+    ap.add_argument("-i", action='store_true',
+                    help="Flag for manually verifying and/or setting document corners")
+
+    args = vars(ap.parse_args())
+    im_dir = args["images"]
+    im_file_path = args["image"]
+    interactive_mode = args["i"]
+
+    scanner = DocScanner(interactive_mode)
+
+    valid_formats = [".jpg", ".jpeg", ".jp2", ".png", ".bmp", ".tiff", ".tif"]
+
+    get_ext = lambda f: os.path.splitext(f)[1].lower()
+
+    # Scan single image specified by command line argument --image <IMAGE_PATH>
+    if im_file_path:
+        scanner.scan(im_file_path)
+
+    # Scan all valid images in directory specified by command line argument --images <IMAGE_DIR>
+    else:
+        im_files = [f for f in os.listdir(im_dir) if get_ext(f) in valid_formats]
+        for im in im_files:
+            scanner.scan(os.path.join(im_dir, im))
+
 
 if __name__ == "__main__":
-    # Argument parser
-    ap = argparse.ArgumentParser(description="Process and scan a document from an image.")
-    ap.add_argument("-i", "--image", required=True, help="Path to the image to be scanned")
-    ap.add_argument("-o", "--output", help="Path to save the scanned image (optional, defaults to 'scanned/')")
-    args = vars(ap.parse_args())
-
-    try:
-        # Process the image
-        warped = process_image(args["image"])
-
-        # Determine the output folder (default to "scanned/")
-        output_folder = args["output"] if args["output"] else "scanned/"
-        
-        # Ensure the output folder exists
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
-
-        # Get the filename without extension
-        filename = os.path.splitext(os.path.basename(args["image"]))[0]
-
-        # Create the output file path
-        output_path = os.path.join(output_folder, f"{filename}_scanned.jpg")
-
-        # Save the output image
-        save_output_image(warped, output_path)
-
-    except Exception as e:
-        print(f"Error processing image: {str(e)}")
+    main()
